@@ -19,7 +19,11 @@ import {
 } from "./components/ui/drawer";
 import { ChordControls, ChordExtensionControls } from "./controls";
 import { Keyboard } from "./keyboard";
-import { InputSelect, OutputSelect } from "./settings";
+import {
+  ControllerInputSelect,
+  DAWInputSelect,
+  OutputSelect,
+} from "./settings";
 import { useMidiInitialize } from "./use-midi";
 
 export function App() {
@@ -46,14 +50,14 @@ export function App() {
       animationStyle={{ _open: "scale-fade-in" }}
       animationDuration="slowest"
       width="100%"
-      maxWidth="4xl"
+      maxWidth="5xl"
       marginInline="auto"
       paddingInline={6}
       paddingBlock={12}
       gap={6}
       alignItems="stretch"
     >
-      <HStack gap={6} justifyContent="space-between">
+      <HStack gap={6} alignItems="center" justifyContent="space-between">
         <Heading size="lg" fontWeight="bold" color="teal.500">
           Idea Machine
         </Heading>
@@ -70,7 +74,8 @@ export function App() {
             </DrawerHeader>
             <DrawerBody>
               <VStack gap={4} alignItems="stretch">
-                <InputSelect portalRef={drawerRef} />
+                <ControllerInputSelect portalRef={drawerRef} />
+                <DAWInputSelect portalRef={drawerRef} />
                 <OutputSelect portalRef={drawerRef} />
               </VStack>
             </DrawerBody>

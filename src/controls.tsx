@@ -9,7 +9,7 @@ import {
   type RadioCardItemProps,
   RadioCardRoot,
 } from "./components/ui/radio-card";
-import { Chord, ChordExtension } from "./types";
+import { ChordExtension, ChordType } from "./types";
 import { useMidi } from "./use-midi";
 
 export function ChordExtensionControls() {
@@ -47,15 +47,13 @@ export function ChordExtensionControls() {
 }
 
 export function ChordControls() {
-  const [chordMode, setChord] = useMidi(
-    useShallow((s) => [s.chord, s.setChord]),
-  );
+  const [chordType] = useMidi(useShallow((s) => [s.chordType]));
   return (
     <RadioCardRoot
-      value={chordMode}
+      value={chordType}
       // onValueChange={({ value }) => {
-      //   if (includes(Object.values(ChordMode), value)) {
-      //     setChord(value);
+      //   if (includes(Object.values(ChordType), value)) {
+      //     setChordType(value);
       //   }
       // }}
       variant="subtle"
@@ -64,25 +62,25 @@ export function ChordControls() {
         <RadioControl
           label="Dim"
           shortcut="a"
-          value={Chord.DIM}
+          value={ChordType.DIM}
           colorPalette="red"
         />
         <RadioControl
           label="Maj"
           shortcut="s"
-          value={Chord.MAJ}
+          value={ChordType.MAJ}
           colorPalette="green"
         />
         <RadioControl
           label="Min"
           shortcut="d"
-          value={Chord.MIN}
+          value={ChordType.MIN}
           colorPalette="orange"
         />
         <RadioControl
           label="Sus"
           shortcut="f"
-          value={Chord.SUS}
+          value={ChordType.SUS}
           colorPalette="purple"
         />
       </HStack>

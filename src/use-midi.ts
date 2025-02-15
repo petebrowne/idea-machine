@@ -1,6 +1,8 @@
 import { useEffect } from "react";
 import {
+  type ControlChangeMessageEvent,
   type Input,
+  type MessageEvent,
   type NoteMessageEvent,
   type Output,
   WebMidi,
@@ -8,84 +10,172 @@ import {
 import { create } from "zustand";
 import { useShallow } from "zustand/react/shallow";
 import { CONTROLS } from "./constants";
-import { getChordNotes, playNotes, stopNotes } from "./midi-utils";
-import { Chord, type Control, ControlType } from "./types";
+import { getChord } from "./midi-utils";
+import { type Chord, type ChordType, type Control, ControlType } from "./types";
 
 interface MidiState {
   enabled: boolean;
   inputs: Input[];
-  input: Input | null;
+  controllerInput: Input | null;
+  dawInput: Input | null;
   padChannel: number | null;
   outputs: Output[];
   output: Output | null;
   initialize: VoidFunction;
-  chord: Chord | null;
+  chordType: ChordType | null;
   extensions: number[];
-  activeNotes: number[];
-  setChord: (chord: Chord) => void;
-  setInput: (input: Input | null) => void;
-  setInputById: (id: string | null) => void;
+  activeChords: Chord[];
+  _chordTypeStack: ChordType[];
+  setChordType: (chordType: ChordType) => void;
+  setControllerInput: (input: Input | null) => void;
+  setControllerInputById: (id: string | null) => void;
+  setDAWInput: (input: Input | null) => void;
+  setDAWInputById: (id: string | null) => void;
   setOutput: (output: Output | null) => void;
   setOutputById: (id: string | null) => void;
   _onKeyDown: (event: KeyboardEvent) => void;
   _onKeyUp: (event: KeyboardEvent) => void;
   _onNoteOn: (event: NoteMessageEvent) => void;
   _onNoteOff: (event: NoteMessageEvent) => void;
+  _onControlChange: (event: ControlChangeMessageEvent) => void;
+  _onPitchBend: (event: MessageEvent) => void;
   _controlOn: (control: Control) => void;
   _controlOff: (control: Control) => void;
+  isPlaying: boolean;
+  tempo: number;
 }
+
+// interface Chord {
+//   pressedNote: Note
+//   notes: Note[];
+// }
 
 export const useMidi = create<MidiState>((set, get) => ({
   enabled: false,
   inputs: [],
-  input: null,
+  controllerInput: null,
+  dawInput: null,
   padChannel: 10,
   outputs: [],
   output: null,
-  chord: null,
+  chordType: null,
   extensions: [],
-  activeNotes: [],
+  activeChords: [],
+  _chordTypeStack: [],
+  isPlaying: false,
+  tempo: 120,
 
   initialize: async () => {
     await WebMidi.enable();
     set({ enabled: true, inputs: WebMidi.inputs, outputs: WebMidi.outputs });
 
-    const { setInput, setOutput, _onKeyDown, _onKeyUp } = get();
-    const inputId = localStorage.getItem("inputId");
-    const input = WebMidi.inputs.find((i) => i.id === inputId);
-    setInput(input ?? null);
+    const { setControllerInput, setDAWInput, setOutput, _onKeyDown, _onKeyUp } =
+      get();
+    const controllerInputId = localStorage.getItem("controllerInputId");
+    const controllerInput = WebMidi.inputs.find(
+      (input) => input.id === controllerInputId,
+    );
+    setControllerInput(controllerInput ?? null);
+
+    const dawInputId = localStorage.getItem("dawInputId");
+    const dawInput = WebMidi.inputs.find((input) => input.id === dawInputId);
+    setDAWInput(dawInput ?? null);
+
     const outputId = localStorage.getItem("outputId");
-    const output = WebMidi.outputs.find((i) => i.id === outputId);
+    const output = WebMidi.outputs.find((input) => input.id === outputId);
     setOutput(output ?? null);
 
     window.addEventListener("keydown", _onKeyDown);
     window.addEventListener("keyup", _onKeyUp);
   },
 
-  setChord: (chord: Chord) => {
-    set({ chord: chord });
+  setChordType: (chordType: ChordType) => {
+    set({ chordType });
   },
 
-  setInput: (input) => {
-    const { input: prevInput, _onNoteOn, _onNoteOff } = get();
+  setControllerInput: (input) => {
+    const {
+      controllerInput: prevInput,
+      _onNoteOn,
+      _onNoteOff,
+      _onControlChange,
+      _onPitchBend,
+    } = get();
     if (prevInput && prevInput !== input) {
       prevInput.removeListener();
     }
     if (input) {
-      localStorage.setItem("inputId", input.id);
+      localStorage.setItem("controllerInputId", input.id);
       input.removeListener();
       input.addListener("noteon", _onNoteOn);
       input.addListener("noteoff", _onNoteOff);
+      input.addListener("controlchange", _onControlChange);
+      input.addListener("pitchbend", _onPitchBend);
     } else {
-      localStorage.removeItem("inputId");
+      localStorage.removeItem("controllerInputId");
     }
-    set({ input });
+    set({ controllerInput: input });
   },
 
-  setInputById: (id) => {
-    const { inputs, setInput } = get();
+  setControllerInputById: (id) => {
+    const { inputs, setControllerInput } = get();
     const input = inputs.find((i) => i.id === id);
-    setInput(input ?? null);
+    setControllerInput(input ?? null);
+  },
+
+  setDAWInput: (input) => {
+    const { dawInput: prevInput } = get();
+    if (prevInput && prevInput !== input) {
+      prevInput.removeListener();
+    }
+    if (input) {
+      localStorage.setItem("dawInputId", input.id);
+      input.removeListener();
+
+      // TODO: setup arpeggiator and sync with DAW
+      input.addListener("start", () => {
+        console.log("Transport started");
+      });
+      input.addListener("stop", () => {
+        console.log("Transport stopped");
+      });
+      input.addListener("continue", () => {
+        console.log("Transport continued");
+      });
+
+      let lastClockTime = performance.now();
+      let clockCount = 0;
+      input.addListener("clock", () => {
+        clockCount++;
+
+        if (clockCount >= 24) {
+          const currentTime = performance.now();
+          const timeDiff = currentTime - lastClockTime;
+          const bpm = Math.round(60000 / timeDiff);
+
+          console.log("bpm", bpm);
+
+          clockCount = 0;
+          lastClockTime = currentTime;
+        }
+      });
+
+      input.addListener("controlchange", (event) =>
+        console.log("controlchange", event),
+      );
+      input.addListener("songposition", (event) =>
+        console.log("songposition", event),
+      );
+    } else {
+      localStorage.removeItem("dawInputId");
+    }
+    set({ dawInput: input });
+  },
+
+  setDAWInputById: (id) => {
+    const { inputs, setDAWInput } = get();
+    const input = inputs.find((i) => i.id === id);
+    setDAWInput(input ?? null);
   },
 
   setOutput: (output) => {
@@ -120,37 +210,70 @@ export const useMidi = create<MidiState>((set, get) => ({
   },
 
   _onNoteOn: (event) => {
-    const { chord, extensions, padChannel, _controlOn } = get();
-    console.log("onNoteOn", event.note.identifier, event.note.number, chord);
+    const {
+      chordType,
+      extensions,
+      padChannel,
+      _controlOn,
+      activeChords,
+      output,
+    } = get();
     const control = getControlByNoteMessageEvent(event, padChannel);
     if (control) {
       _controlOn(control);
       return;
     }
-    const chordNotes = getChordNotes(event.note.number, chord, extensions);
-    set({ activeNotes: chordNotes });
-    const { output } = get();
+    const chord = getChord(event.note, chordType, extensions);
+    set({ activeChords: [...activeChords, chord] });
     if (output) {
-      playNotes(output, chordNotes);
+      console.log(
+        "playNotes",
+        chord.notes.map((n) => n.identifier),
+      );
+      output.playNote(chord.notes);
     }
   },
 
   _onNoteOff: (event) => {
-    console.log("onNoteOff", event.note.identifier);
-    const { output, activeNotes, padChannel, _controlOff } = get();
+    const { output, activeChords, padChannel, _controlOff } = get();
     const control = getControlByNoteMessageEvent(event, padChannel);
+    const activeChord = activeChords.find((c) =>
+      c.notes.some((n) => n.number === event.note.number),
+    );
+    const newActiveChords = activeChords.filter((c) => c !== activeChord);
+    set({ activeChords: newActiveChords });
     if (control) {
       _controlOff(control);
       return;
     }
-    if (output) {
-      stopNotes(output, activeNotes);
+    if (output && activeChord) {
+      output.stopNote(activeChord.notes);
+    }
+  },
+
+  _onControlChange: (event) => {
+    console.log(
+      "onControlChange",
+      event.controller.name,
+      event.controller.number,
+      event.value,
+    );
+  },
+
+  _onPitchBend: (event) => {
+    const { output } = get();
+    if (output && typeof event.value === "number") {
+      output.sendPitchBend(event.value);
     }
   },
 
   _controlOn: (control: Control) => {
     if (control.type === ControlType.CHORD) {
-      set({ chord: control.chord });
+      const { _chordTypeStack } = get();
+      const newChordTypeStack = _chordTypeStack.includes(control.chordType)
+        ? _chordTypeStack
+        : [..._chordTypeStack, control.chordType];
+      set({ _chordTypeStack: newChordTypeStack, chordType: control.chordType });
       return;
     }
     const { extensions } = get();
@@ -161,7 +284,12 @@ export const useMidi = create<MidiState>((set, get) => ({
 
   _controlOff: (control: Control) => {
     if (control.type === ControlType.CHORD) {
-      set({ chord: Chord.MAJ });
+      const { _chordTypeStack } = get();
+      const newChordTypeStack = _chordTypeStack.slice(0, -1);
+      set({
+        _chordTypeStack: newChordTypeStack,
+        chordType: newChordTypeStack[newChordTypeStack.length - 1] ?? null,
+      });
       return;
     }
     const { extensions } = get();

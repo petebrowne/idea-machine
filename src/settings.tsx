@@ -15,9 +15,9 @@ interface SelectProps {
   portalRef?: React.RefObject<HTMLDivElement | null>;
 }
 
-export function InputSelect({ portalRef }: SelectProps) {
-  const [inputs, input, setInputById] = useMidi(
-    useShallow((s) => [s.inputs, s.input, s.setInputById]),
+export function ControllerInputSelect({ portalRef }: SelectProps) {
+  const [inputs, controllerInput, setControllerInputById] = useMidi(
+    useShallow((s) => [s.inputs, s.controllerInput, s.setControllerInputById]),
   );
   const inputsCollection = useMemo(
     () =>
@@ -32,14 +32,53 @@ export function InputSelect({ portalRef }: SelectProps) {
   return (
     <SelectRoot
       collection={inputsCollection}
-      value={input?.id ? [input.id] : []}
+      value={controllerInput?.id ? [controllerInput.id] : []}
       onValueChange={({ value: [value] }) => {
         if (value) {
-          setInputById(value);
+          setControllerInputById(value);
         }
       }}
     >
-      <SelectLabel>Input</SelectLabel>
+      <SelectLabel>MIDI Controller Input</SelectLabel>
+      <SelectTrigger>
+        <SelectValueText placeholder="Select input" />
+      </SelectTrigger>
+      <SelectContent portalRef={portalRef}>
+        {inputsCollection.items.map((input) => (
+          <SelectItem item={input} key={input.value}>
+            {input.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </SelectRoot>
+  );
+}
+
+export function DAWInputSelect({ portalRef }: SelectProps) {
+  const [inputs, dawInput, setDAWInputById] = useMidi(
+    useShallow((s) => [s.inputs, s.dawInput, s.setDAWInputById]),
+  );
+  const inputsCollection = useMemo(
+    () =>
+      createListCollection({
+        items: inputs.map((input) => ({
+          label: input.name,
+          value: input.id,
+        })),
+      }),
+    [inputs],
+  );
+  return (
+    <SelectRoot
+      collection={inputsCollection}
+      value={dawInput?.id ? [dawInput.id] : []}
+      onValueChange={({ value: [value] }) => {
+        if (value) {
+          setDAWInputById(value);
+        }
+      }}
+    >
+      <SelectLabel>DAW Input</SelectLabel>
       <SelectTrigger>
         <SelectValueText placeholder="Select input" />
       </SelectTrigger>

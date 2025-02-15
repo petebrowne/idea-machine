@@ -1,36 +1,48 @@
-import { Box, Button, type ButtonProps, Grid } from "@chakra-ui/react";
+import { Button, type ButtonProps, Grid, HStack } from "@chakra-ui/react";
+import { useMidi } from "./use-midi";
 
 export function Keyboard() {
   return (
-    <Box
+    <HStack
       backgroundColor="colorPalette.700"
       paddingInline={2}
       paddingBlockEnd={2}
       borderBottomRadius="lg"
       boxShadow="inner"
+      gap={2}
     >
-      <Grid
-        templateColumns="repeat(21, 1fr)"
-        gridTemplateRows="12rem 4rem"
-        isolation="isolate"
-        colorPalette="gray"
-        gap={2}
-      >
-        <WhiteKey note="C" gridColumn="1 / 4" gridRow="1 / 3" />
-        <WhiteKey note="D" gridColumn="4 / 7" gridRow="1 / 3" />
-        <WhiteKey note="E" gridColumn="7 / 10" gridRow="1 / 3" />
-        <WhiteKey note="F" gridColumn="10 / 13" gridRow="1 / 3" />
-        <WhiteKey note="G" gridColumn="13 / 16" gridRow="1 / 3" />
-        <WhiteKey note="A" gridColumn="16 / 19" gridRow="1 / 3" />
-        <WhiteKey note="B" gridColumn="19 / 22" gridRow="1 / 3" />
+      <Scale octave={3} />
+      <Scale octave={4} />
+    </HStack>
+  );
+}
 
-        <BlackKey note="C#" gridColumn="3 / 5" gridRow="1 / 2" />
-        <BlackKey note="D#" gridColumn="6 / 8" gridRow="1 / 2" />
-        <BlackKey note="F#" gridColumn="12 / 14" gridRow="1 / 2" />
-        <BlackKey note="G#" gridColumn="15 / 17" gridRow="1 / 2" />
-        <BlackKey note="A#" gridColumn="18 / 20" gridRow="1 / 2" />
-      </Grid>
-    </Box>
+interface ScaleProps {
+  octave: number;
+}
+
+function Scale({ octave }: ScaleProps) {
+  return (
+    <Grid
+      templateColumns="repeat(21, 1fr)"
+      gridTemplateRows="12rem 4rem"
+      isolation="isolate"
+      colorPalette="gray"
+      gap={2}
+    >
+      <WhiteKey note={`C${octave}`} gridColumn="1 / 4" gridRow="1 / 3" />
+      <WhiteKey note={`D${octave}`} gridColumn="4 / 7" gridRow="1 / 3" />
+      <WhiteKey note={`E${octave}`} gridColumn="7 / 10" gridRow="1 / 3" />
+      <WhiteKey note={`F${octave}`} gridColumn="10 / 13" gridRow="1 / 3" />
+      <WhiteKey note={`G${octave}`} gridColumn="13 / 16" gridRow="1 / 3" />
+      <WhiteKey note={`A${octave}`} gridColumn="16 / 19" gridRow="1 / 3" />
+      <WhiteKey note={`B${octave}`} gridColumn="19 / 22" gridRow="1 / 3" />
+      <BlackKey note={`C#${octave}`} gridColumn="3 / 5" gridRow="1 / 2" />
+      <BlackKey note={`D#${octave}`} gridColumn="6 / 8" gridRow="1 / 2" />
+      <BlackKey note={`F#${octave}`} gridColumn="12 / 14" gridRow="1 / 2" />
+      <BlackKey note={`G#${octave}`} gridColumn="15 / 17" gridRow="1 / 2" />
+      <BlackKey note={`A#${octave}`} gridColumn="18 / 20" gridRow="1 / 2" />
+    </Grid>
   );
 }
 
@@ -38,32 +50,67 @@ interface KeyProps extends ButtonProps {
   note: string;
 }
 
-function WhiteKey({ note, ...props }: KeyProps) {
+function WhiteKey(props: KeyProps) {
   return (
-    <Button
-      height="100%"
-      borderTopRadius={0}
-      alignItems="flex-end"
-      paddingBlockEnd={5}
-      boxShadow="md"
+    <Key
+      _active={{
+        backgroundColor: "blue.300",
+      }}
+      _highlighted={{
+        backgroundColor: "orange.200",
+      }}
       {...props}
-    >
-      {note}
-    </Button>
+    />
   );
 }
 
-function BlackKey({ note, ...props }: KeyProps) {
+function BlackKey(props: KeyProps) {
   return (
-    <Button
+    <Key
       variant="subtle"
       position="relative"
       zIndex={1}
+      _active={{
+        backgroundColor: "blue.700",
+      }}
+      _highlighted={{
+        backgroundColor: "orange.800",
+      }}
+      {...props}
+    />
+  );
+}
+
+function Key({ note, ...props }: KeyProps) {
+  const activeChords = useMidi((m) => m.activeChords);
+  const active = activeChords.some(
+    (chord) => chord.activeNote.identifier === note,
+  );
+  const highlighted =
+    !active &&
+    activeChords.some((chord) =>
+      chord.notes.some((n) => n.identifier === note),
+    );
+  return (
+    <Button
       height="100%"
       borderTopRadius={0}
       alignItems="flex-end"
-      paddingBlockEnd={5}
       boxShadow="md"
+      data-active={active ? "true" : undefined}
+      data-highlighted={highlighted ? "true" : undefined}
+      fontSize="2xs"
+      transformOrigin="top"
+      css={{
+        _active: {
+          transform: "rotateX(7deg)",
+          boxShadow: "sm",
+        },
+        _highlighted: {
+          transform: "rotateX(7deg)",
+          boxShadow: "sm",
+        },
+      }}
       {...props}
     >
       {note}

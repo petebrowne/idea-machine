@@ -1,10 +1,17 @@
-export const Chord = {
+import type { Note } from "webmidi";
+
+export interface Chord {
+  activeNote: Note;
+  notes: Note[];
+}
+
+export const ChordType = {
   MAJ: "MAJ",
   MIN: "MIN",
   DIM: "DIM",
   SUS: "SUS",
 } as const;
-export type Chord = (typeof Chord)[keyof typeof Chord];
+export type ChordType = (typeof ChordType)[keyof typeof ChordType];
 
 export const ChordExtension = {
   ADD6: 9,
@@ -23,7 +30,7 @@ export type ControlType = (typeof ControlType)[keyof typeof ControlType];
 
 export type ChordControl = {
   type: typeof ControlType.CHORD;
-  chord: Chord;
+  chordType: ChordType;
   shortcut: string;
   padNote: number;
 };

@@ -1,27 +1,27 @@
-import { Chord, ChordExtension, type Control, ControlType } from "./types";
+import { ChordExtension, ChordType, type Control, ControlType } from "./types";
 
 export const CONTROLS: Control[] = [
   {
     type: ControlType.CHORD,
-    chord: Chord.DIM,
+    chordType: ChordType.DIM,
     shortcut: "a",
     padNote: 36,
   },
   {
     type: ControlType.CHORD,
-    chord: Chord.MAJ,
+    chordType: ChordType.MAJ,
     shortcut: "s",
     padNote: 37,
   },
   {
     type: ControlType.CHORD,
-    chord: Chord.MIN,
+    chordType: ChordType.MIN,
     shortcut: "d",
     padNote: 38,
   },
   {
     type: ControlType.CHORD,
-    chord: Chord.SUS,
+    chordType: ChordType.SUS,
     shortcut: "f",
     padNote: 39,
   },
