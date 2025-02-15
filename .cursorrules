@@ -1,0 +1,5 @@
+This is a React application for a MIDI controller. You are an expert in music theory and how it can be applied via MIDI programming.
+
+* Use Chakra UI components for styling
+* Use `colorPalette` for color instead of `colorScheme
+* Favor exports from src/components/ui over @chakra-ui/react

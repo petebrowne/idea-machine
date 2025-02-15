@@ -1,0 +1,31 @@
+{
+  "name": "orchid",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@chakra-ui/react": "^3.8.0",
+    "@emotion/react": "^11.14.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-icons": "^5.4.0",
+    "webmidi": "^3.1.12",
+    "zustand": "^5.0.3"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "1.9.4",
+    "@types/react": "^19.0.8",
+    "@types/react-dom": "^19.0.3",
+    "@vitejs/plugin-react": "^4.3.4",
+    "globals": "^15.14.0",
+    "typescript": "~5.7.2",
+    "vite": "^6.1.0",
+    "vite-tsconfig-paths": "^5.1.4"
+  }
+}
