@@ -34,13 +34,11 @@ export function ControllerInputSelect({ portalRef }: SelectProps) {
       collection={inputsCollection}
       value={controllerInput?.id ? [controllerInput.id] : []}
       onValueChange={({ value: [value] }) => {
-        if (value) {
-          setControllerInputById(value);
-        }
+        setControllerInputById(value ?? null);
       }}
     >
       <SelectLabel>MIDI Controller Input</SelectLabel>
-      <SelectTrigger>
+      <SelectTrigger clearable>
         <SelectValueText placeholder="Select input" />
       </SelectTrigger>
       <SelectContent portalRef={portalRef}>
@@ -73,13 +71,11 @@ export function DAWInputSelect({ portalRef }: SelectProps) {
       collection={inputsCollection}
       value={dawInput?.id ? [dawInput.id] : []}
       onValueChange={({ value: [value] }) => {
-        if (value) {
-          setDAWInputById(value);
-        }
+        setDAWInputById(value ?? null);
       }}
     >
       <SelectLabel>DAW Input</SelectLabel>
-      <SelectTrigger>
+      <SelectTrigger clearable>
         <SelectValueText placeholder="Select input" />
       </SelectTrigger>
       <SelectContent portalRef={portalRef}>
@@ -112,13 +108,11 @@ export function OutputSelect({ portalRef }: SelectProps) {
       collection={outputsCollection}
       value={output?.id ? [output.id] : []}
       onValueChange={({ value: [value] }) => {
-        if (value) {
-          setOutputById(value);
-        }
+        setOutputById(value ?? null);
       }}
     >
       <SelectLabel>Output</SelectLabel>
-      <SelectTrigger>
+      <SelectTrigger clearable>
         <SelectValueText placeholder="Select output" />
       </SelectTrigger>
       <SelectContent portalRef={portalRef}>

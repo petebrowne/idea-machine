@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import * as Tone from "tone";
 import {
   type ControlChangeMessageEvent,
   type Input,
@@ -14,6 +15,8 @@ import { useShallow } from "zustand/react/shallow";
 import { CONTROLS, KEYBOARD_NOTE_MAP } from "./constants";
 import { getChord } from "./midi-utils";
 import { type Chord, ChordType, type Control, ControlType } from "./types";
+
+const synth = new Tone.PolySynth(Tone.Synth).toDestination();
 
 interface MidiState {
   enabled: boolean;
@@ -219,6 +222,8 @@ export const useMidi = create<MidiState>((set, get) => ({
     if (output) {
       // console.group("play -", chord.notes.map((n) => n.identifier).join(" "));
       output.playNote(chord.notes);
+    } else {
+      synth.triggerAttack(chord.notes.map((n) => n.identifier));
     }
   },
 
@@ -230,13 +235,17 @@ export const useMidi = create<MidiState>((set, get) => ({
     );
     const newActiveChords = activeChords.filter((c) => c !== activeChord);
     set({ activeChords: newActiveChords });
-    if (output && activeChord) {
+    if (!activeChord) return;
+
+    if (output) {
       // console.log(
       //   "stop -",
       //   activeChord.notes.map((n) => n.identifier).join(" "),
       // );
       // console.groupEnd();
       output.stopNote(activeChord.notes);
+    } else {
+      synth.triggerRelease(activeChord.notes.map((n) => n.identifier));
     }
   },
 

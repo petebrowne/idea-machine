@@ -10,7 +10,7 @@ export function Keyboard() {
       paddingBlockEnd={2}
       borderBottomRadius="lg"
       boxShadow="inner"
-      gap={2}
+      gap={1}
     >
       <Scale octave={3} />
       <Scale octave={4} />
@@ -29,7 +29,7 @@ function Scale({ octave }: ScaleProps) {
       gridTemplateRows="12rem 4rem"
       isolation="isolate"
       colorPalette="gray"
-      gap={2}
+      gap={1}
       flex={1}
     >
       <WhiteKey note={`C${octave}`} gridColumn="1 / 4" gridRow="1 / 3" />
@@ -55,9 +55,6 @@ interface KeyProps extends ButtonProps {
 function WhiteKey(props: KeyProps) {
   return (
     <Key
-      _active={{
-        backgroundColor: "blue.300",
-      }}
       _highlighted={{
         backgroundColor: "orange.200",
       }}
@@ -72,9 +69,6 @@ function BlackKey(props: KeyProps) {
       variant="subtle"
       position="relative"
       zIndex={1}
-      _active={{
-        backgroundColor: "blue.700",
-      }}
       _highlighted={{
         backgroundColor: "orange.800",
       }}
@@ -90,11 +84,9 @@ function Key({ note, ...props }: KeyProps) {
   const active = activeChords.some(
     (chord) => chord.activeNote.identifier === note,
   );
-  const highlighted =
-    !active &&
-    activeChords.some((chord) =>
-      chord.notes.some((n) => n.identifier === note),
-    );
+  const highlighted = activeChords.some((chord) =>
+    chord.notes.some((n) => n.identifier === note),
+  );
   return (
     <Button
       height="100%"
@@ -107,10 +99,25 @@ function Key({ note, ...props }: KeyProps) {
       padding={0}
       minWidth={2}
       transformOrigin="top"
+      _after={{
+        content: '""',
+        position: "absolute",
+        bottom: 6,
+        left: "50%",
+        transform: "translateX(-50%)",
+        width: "50%",
+        aspectRatio: "1 / 1",
+        backgroundColor: "transparent",
+        borderRadius: "full",
+        zIndex: 2,
+      }}
       css={{
         _active: {
           transform: "rotateX(7deg)",
           boxShadow: "sm",
+          _after: {
+            backgroundColor: "blue.500",
+          },
         },
         _highlighted: {
           transform: "rotateX(7deg)",
