@@ -1,4 +1,5 @@
 import { Button, type ButtonProps, Grid, HStack } from "@chakra-ui/react";
+import { useShallow } from "zustand/shallow";
 import { useMidi } from "./use-midi";
 
 export function Keyboard() {
@@ -29,6 +30,7 @@ function Scale({ octave }: ScaleProps) {
       isolation="isolate"
       colorPalette="gray"
       gap={2}
+      flex={1}
     >
       <WhiteKey note={`C${octave}`} gridColumn="1 / 4" gridRow="1 / 3" />
       <WhiteKey note={`D${octave}`} gridColumn="4 / 7" gridRow="1 / 3" />
@@ -82,7 +84,9 @@ function BlackKey(props: KeyProps) {
 }
 
 function Key({ note, ...props }: KeyProps) {
-  const activeChords = useMidi((m) => m.activeChords);
+  const [activeChords, playNote, stopNote] = useMidi(
+    useShallow((m) => [m.activeChords, m.playNote, m.stopNote]),
+  );
   const active = activeChords.some(
     (chord) => chord.activeNote.identifier === note,
   );
@@ -100,6 +104,8 @@ function Key({ note, ...props }: KeyProps) {
       data-active={active ? "true" : undefined}
       data-highlighted={highlighted ? "true" : undefined}
       fontSize="2xs"
+      padding={0}
+      minWidth={2}
       transformOrigin="top"
       css={{
         _active: {
@@ -111,6 +117,8 @@ function Key({ note, ...props }: KeyProps) {
           boxShadow: "sm",
         },
       }}
+      onMouseDown={() => playNote(note)}
+      onMouseUp={() => stopNote(note)}
       {...props}
     >
       {note}

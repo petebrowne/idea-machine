@@ -11,25 +11,32 @@ const CHORD_SCALES = {
 export function getChord(
   note: Note,
   chordType: ChordType | null,
-  extensions: number[],
+  chordExtensions: number[],
+  chordVoicing: number,
 ) {
   if (chordType == null) {
     return { activeNote: note, notes: [note] };
   }
   const scale = CHORD_SCALES[chordType];
+  const offsets = [
+    ...[0, 2, 4].map((n) => scale[n]).filter((n) => n != null),
+    ...chordExtensions.map((e) =>
+      chordType === ChordType.DIM && e === ChordExtension.MIN7 ? e - 1 : e,
+    ),
+  ];
+
+  const chordVoicingCount = Math.floor(chordVoicing * offsets.length);
+  for (let i = 0; i < chordVoicingCount; i++) {
+    const offset = offsets[i];
+    if (offset != null) {
+      offsets[i] = offset + 12;
+    }
+  }
+
   return {
     activeNote: note,
-    notes: Utilities.buildNoteArray([
-      ...[0, 2, 4]
-        .map((n) => (scale[n] != null ? note.number + scale[n] : null))
-        .filter((n) => n != null),
-      ...extensions.map(
-        (e) =>
-          note.number +
-          (chordType === ChordType.DIM && e === ChordExtension.MIN7
-            ? e - 1
-            : e),
-      ),
-    ]),
+    notes: Utilities.buildNoteArray(
+      offsets.map((offset) => offset + note.number),
+    ),
   };
 }

@@ -9,44 +9,34 @@ import {
   type RadioCardItemProps,
   RadioCardRoot,
 } from "./components/ui/radio-card";
-import { ChordExtension, ChordType } from "./types";
+import { Slider } from "./components/ui/slider";
+import { Switch } from "./components/ui/switch";
+import { CONTROLS } from "./constants";
+import { ControlType } from "./types";
 import { useMidi } from "./use-midi";
 
 export function ChordExtensionControls() {
-  const [extensions] = useMidi(useShallow((s) => [s.extensions]));
+  const [chordExtensions] = useMidi(useShallow((s) => [s.chordExtensions]));
   return (
-    <CheckboxGroup value={extensions.map((e) => e.toString())}>
+    <CheckboxGroup value={chordExtensions.map((e) => e.toString())}>
       <HStack gap={3}>
-        <CheckboxControl
-          label="6"
-          shortcut="q"
-          value={ChordExtension.ADD6.toString()}
-          colorPalette="cyan"
-        />
-        <CheckboxControl
-          label="m7"
-          shortcut="w"
-          value={ChordExtension.MIN7.toString()}
-          colorPalette="pink"
-        />
-        <CheckboxControl
-          label="M7"
-          shortcut="e"
-          value={ChordExtension.MAJ7.toString()}
-          colorPalette="blue"
-        />
-        <CheckboxControl
-          label="9"
-          shortcut="r"
-          value={ChordExtension.ADD9.toString()}
-          colorPalette="yellow"
-        />
+        {CONTROLS.filter((c) => c.type === ControlType.CHORD_EXTENSION).map(
+          (c) => (
+            <CheckboxControl
+              key={c.chordExtension}
+              label={c.label}
+              shortcut={c.shortcut}
+              value={c.chordExtension.toString()}
+              colorPalette={c.color}
+            />
+          ),
+        )}
       </HStack>
     </CheckboxGroup>
   );
 }
 
-export function ChordControls() {
+export function ChordTypeControls() {
   const [chordType] = useMidi(useShallow((s) => [s.chordType]));
   return (
     <RadioCardRoot
@@ -59,30 +49,15 @@ export function ChordControls() {
       variant="subtle"
     >
       <HStack gap={3}>
-        <RadioControl
-          label="Dim"
-          shortcut="a"
-          value={ChordType.DIM}
-          colorPalette="red"
-        />
-        <RadioControl
-          label="Maj"
-          shortcut="s"
-          value={ChordType.MAJ}
-          colorPalette="green"
-        />
-        <RadioControl
-          label="Min"
-          shortcut="d"
-          value={ChordType.MIN}
-          colorPalette="orange"
-        />
-        <RadioControl
-          label="Sus"
-          shortcut="f"
-          value={ChordType.SUS}
-          colorPalette="purple"
-        />
+        {CONTROLS.filter((c) => c.type === ControlType.CHORD_TYPE).map((c) => (
+          <RadioControl
+            key={c.chordType}
+            label={c.label}
+            shortcut={c.shortcut}
+            value={c.chordType}
+            colorPalette={c.color}
+          />
+        ))}
       </HStack>
     </RadioCardRoot>
   );
@@ -97,7 +72,7 @@ function RadioControl({ label, shortcut, ...props }: RadioControlProps) {
     <RadioCardItem
       indicator={false}
       label={
-        <HStack justifyContent="space-between" width="full">
+        <HStack justifyContent="space-between" width="full" flexWrap="wrap">
           <Text color="fg">{label}</Text>
           <Text color="fg.muted">({shortcut})</Text>
         </HStack>
@@ -132,7 +107,7 @@ function CheckboxControl({ label, shortcut, ...props }: CheckboxControlProps) {
       variant="subtle"
       indicator={false}
       label={
-        <HStack justifyContent="space-between" width="full">
+        <HStack justifyContent="space-between" width="full" flexWrap="wrap">
           <Text color="fg">{label}</Text>
           <Text color="fg.muted">({shortcut})</Text>
         </HStack>
@@ -181,4 +156,69 @@ const controlStyle = {
 
 const controlStyleChecked = {
   boxShadow: "inset 0 3px 3px rgba(0, 0, 0, 0.5)",
+};
+
+export function ChordVoicingControl() {
+  const [chordVoicing, setChordVoicing] = useMidi(
+    useShallow((s) => [s.chordVoicing, s.setChordVoicing]),
+  );
+  return (
+    <Slider
+      value={[chordVoicing]}
+      onValueChange={({ value: [value] }) => {
+        if (value != null) {
+          setChordVoicing(value);
+        }
+      }}
+      min={0}
+      max={1}
+      step={0.01}
+      variant="solid"
+      label="Voicing"
+      css={{
+        "& [data-part=track]": {
+          backgroundColor: "bg",
+        },
+        "& [data-part=range]": {
+          // backgroundColor: "var(--chakra-colors-color-palette-700)",
+        },
+        "& [data-part=thumb]": {
+          // borderColor: "var(--chakra-colors-color-palette-600)",
+          boxShadow: "sm",
+          backgroundColor: "fg",
+          // borderWidth: 1,
+        },
+        "& [data-part=label]": {
+          ...labelStyle,
+        },
+      }}
+    />
+  );
+}
+
+export function StickyChordTypeControl() {
+  const [stickyChordTypes, setStickyChordTypes] = useMidi(
+    useShallow((s) => [s.stickyChordTypes, s.setStickyChordTypes]),
+  );
+  return (
+    <Switch
+      checked={stickyChordTypes}
+      onCheckedChange={() => setStickyChordTypes(!stickyChordTypes)}
+      // variant="raised"
+    >
+      <Text css={labelStyle}>Sticky Chords</Text>
+    </Switch>
+  );
+}
+
+const labelStyle = {
+  // color: "var(--chakra-colors-teal-400)",
+  color: "rgba(255, 255, 255, .75)",
+  fontWeight: "900",
+  textTransform: "uppercase",
+  letterSpacing: "wider",
+  fontSize: "xs",
+  textShadow: "0px -1px 0px rgba(0, 0, 0, .7)",
+  // textShadow:
+  // "0px 1px 0px rgba(255, 255, 255, .3), 0px -1px 0px rgba(0, 0, 0, .7)",
 };

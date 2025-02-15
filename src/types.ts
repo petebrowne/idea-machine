@@ -23,23 +23,27 @@ export type ChordExtension =
   (typeof ChordExtension)[keyof typeof ChordExtension];
 
 export const ControlType = {
-  CHORD: "CHORD",
-  EXTENSION: "EXTENSION",
+  CHORD_TYPE: "CHORD_TYPE",
+  CHORD_EXTENSION: "CHORD_EXTENSION",
 } as const;
 export type ControlType = (typeof ControlType)[keyof typeof ControlType];
 
-export type ChordControl = {
-  type: typeof ControlType.CHORD;
+export type ChordTypeControl = {
+  type: typeof ControlType.CHORD_TYPE;
   chordType: ChordType;
+  label: string;
+  color: string;
   shortcut: string;
   padNote: number;
 };
 
-export type ExtensionControl = {
-  type: typeof ControlType.EXTENSION;
-  extension: ChordExtension;
+export type ChordExtensionControl = {
+  type: typeof ControlType.CHORD_EXTENSION;
+  chordExtension: ChordExtension;
+  label: string;
+  color: string;
   shortcut: string;
   padNote: number;
 };
 
-export type Control = ChordControl | ExtensionControl;
+export type Control = ChordTypeControl | ChordExtensionControl;

@@ -1,4 +1,5 @@
 import {
+  Box,
   Center,
   HStack,
   Heading,
@@ -8,7 +9,7 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { useRef } from "react";
-import { LuSettings } from "react-icons/lu";
+import { LuLightbulb, LuSettings } from "react-icons/lu";
 import {
   DrawerBody,
   DrawerCloseTrigger,
@@ -17,7 +18,12 @@ import {
   DrawerRoot,
   DrawerTrigger,
 } from "./components/ui/drawer";
-import { ChordControls, ChordExtensionControls } from "./controls";
+import {
+  ChordExtensionControls,
+  ChordTypeControls,
+  ChordVoicingControl,
+  StickyChordTypeControl,
+} from "./controls";
 import { Keyboard } from "./keyboard";
 import {
   ControllerInputSelect,
@@ -57,50 +63,73 @@ export function App() {
       gap={6}
       alignItems="stretch"
     >
-      <HStack gap={6} alignItems="center" justifyContent="space-between">
-        <Heading size="lg" fontWeight="bold" color="teal.500">
-          Idea Machine
-        </Heading>
-        <DrawerRoot size="md">
-          <DrawerTrigger asChild>
-            <IconButton aria-label="Open Settings" variant="ghost">
-              <LuSettings />
-            </IconButton>
-          </DrawerTrigger>
-          <DrawerContent ref={drawerRef} backgroundColor="bg.muted">
-            <DrawerCloseTrigger />
-            <DrawerHeader>
-              <Heading size="sm">Settings</Heading>
-            </DrawerHeader>
-            <DrawerBody>
-              <VStack gap={4} alignItems="stretch">
-                <ControllerInputSelect portalRef={drawerRef} />
-                <DAWInputSelect portalRef={drawerRef} />
-                <OutputSelect portalRef={drawerRef} />
-              </VStack>
-            </DrawerBody>
-          </DrawerContent>
-        </DrawerRoot>
-      </HStack>
-      <HStack gap={6} alignItems="flex-start">
-        <VStack
-          gap={6}
-          alignItems="stretch"
-          flex={1}
-          layerStyle="fill.solid"
-          boxShadow="inset 0 0 5px 1px var(--chakra-colors-color-palette-500), 0 15px var(--chakra-colors-color-palette-700)"
-          colorPalette="teal"
-          borderTopRadius="sm"
-          borderBottomRadius="xl"
-          padding={9}
-        >
-          <VStack gap={3} alignItems="stretch" colorPalette="gray">
-            <ChordExtensionControls />
-            <ChordControls />
-          </VStack>
-          <Keyboard />
+      <VStack
+        gap={6}
+        alignItems="stretch"
+        flex={1}
+        layerStyle="fill.solid"
+        boxShadow="inset 0 0 5px 1px var(--chakra-colors-color-palette-500), 0 15px var(--chakra-colors-color-palette-700)"
+        colorPalette="teal"
+        borderTopRadius="sm"
+        borderBottomRadius="xl"
+        paddingInline={9}
+        paddingBlockStart={4}
+        paddingBlockEnd={9}
+      >
+        <HStack gap={6} alignItems="center" justifyContent="space-between">
+          <Heading
+            size="xl"
+            fontWeight="bold"
+            color="teal.800"
+            textShadow="0 1px 0 rgba(255, 255, 255, .3), 0 -1px 0 rgba(0, 0, 0, .7)"
+          >
+            <HStack gap={2} alignItems="center">
+              <LuLightbulb />
+              <span>Idea Machine</span>
+            </HStack>
+          </Heading>
+          <DrawerRoot size="md">
+            <DrawerTrigger asChild>
+              <IconButton aria-label="Open Settings" color="teal.800">
+                <LuSettings />
+              </IconButton>
+            </DrawerTrigger>
+            <DrawerContent ref={drawerRef} backgroundColor="bg.muted">
+              <DrawerCloseTrigger />
+              <DrawerHeader>
+                <Heading size="sm">Settings</Heading>
+              </DrawerHeader>
+              <DrawerBody>
+                <VStack gap={4} alignItems="stretch">
+                  <ControllerInputSelect portalRef={drawerRef} />
+                  <DAWInputSelect portalRef={drawerRef} />
+                  <OutputSelect portalRef={drawerRef} />
+                </VStack>
+              </DrawerBody>
+            </DrawerContent>
+          </DrawerRoot>
+        </HStack>
+        <VStack gap={3} alignItems="stretch" colorPalette="gray">
+          <ChordExtensionControls />
+          <ChordTypeControls />
         </VStack>
-      </HStack>
+        <Keyboard />
+        <HStack
+          gap={9}
+          alignItems="flex-end"
+          backgroundColor="bg.muted/80"
+          borderRadius="md"
+          boxShadow="inset 0 2px 4px 0 rgba(0, 0, 0, .5), 0 0 5px 1px var(--chakra-colors-color-palette-500)"
+          padding={6}
+        >
+          <Box flex={1}>
+            <ChordVoicingControl />
+          </Box>
+          <Box>
+            <StickyChordTypeControl />
+          </Box>
+        </HStack>
+      </VStack>
     </VStack>
   );
 }
