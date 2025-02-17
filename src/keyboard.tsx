@@ -33,17 +33,17 @@ function Scale({ octave }: ScaleProps) {
       flex={1}
     >
       <WhiteKey note={`C${octave}`} gridColumn="1 / 4" gridRow="1 / 3" />
+      <BlackKey note={`C#${octave}`} gridColumn="3 / 5" gridRow="1 / 2" />
       <WhiteKey note={`D${octave}`} gridColumn="4 / 7" gridRow="1 / 3" />
+      <BlackKey note={`D#${octave}`} gridColumn="6 / 8" gridRow="1 / 2" />
       <WhiteKey note={`E${octave}`} gridColumn="7 / 10" gridRow="1 / 3" />
       <WhiteKey note={`F${octave}`} gridColumn="10 / 13" gridRow="1 / 3" />
-      <WhiteKey note={`G${octave}`} gridColumn="13 / 16" gridRow="1 / 3" />
-      <WhiteKey note={`A${octave}`} gridColumn="16 / 19" gridRow="1 / 3" />
-      <WhiteKey note={`B${octave}`} gridColumn="19 / 22" gridRow="1 / 3" />
-      <BlackKey note={`C#${octave}`} gridColumn="3 / 5" gridRow="1 / 2" />
-      <BlackKey note={`D#${octave}`} gridColumn="6 / 8" gridRow="1 / 2" />
       <BlackKey note={`F#${octave}`} gridColumn="12 / 14" gridRow="1 / 2" />
+      <WhiteKey note={`G${octave}`} gridColumn="13 / 16" gridRow="1 / 3" />
       <BlackKey note={`G#${octave}`} gridColumn="15 / 17" gridRow="1 / 2" />
+      <WhiteKey note={`A${octave}`} gridColumn="16 / 19" gridRow="1 / 3" />
       <BlackKey note={`A#${octave}`} gridColumn="18 / 20" gridRow="1 / 2" />
+      <WhiteKey note={`B${octave}`} gridColumn="19 / 22" gridRow="1 / 3" />
     </Grid>
   );
 }
@@ -126,6 +126,16 @@ function Key({ note, ...props }: KeyProps) {
       }}
       onMouseDown={() => playNote(note)}
       onMouseUp={() => stopNote(note)}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          playNote(note);
+        }
+      }}
+      onKeyUp={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          stopNote(note);
+        }
+      }}
       {...props}
     >
       {note}

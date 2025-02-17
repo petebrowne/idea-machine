@@ -44,14 +44,14 @@ interface MidiState {
   setOutputById: (id: string | null) => void;
   playNote: (note: string | number | Note) => void;
   stopNote: (note: string | number | Note) => void;
+  controlOn: (control: Control) => void;
+  controlOff: (control: Control) => void;
   _onKeyDown: (event: KeyboardEvent) => void;
   _onKeyUp: (event: KeyboardEvent) => void;
   _onNoteOn: (event: NoteMessageEvent) => void;
   _onNoteOff: (event: NoteMessageEvent) => void;
   _onControlChange: (event: ControlChangeMessageEvent) => void;
   _onPitchBend: (event: MessageEvent) => void;
-  _controlOn: (control: Control) => void;
-  _controlOff: (control: Control) => void;
 }
 
 export const useMidi = create<MidiState>((set, get) => ({
@@ -249,8 +249,54 @@ export const useMidi = create<MidiState>((set, get) => ({
     }
   },
 
+  controlOn: (control: Control) => {
+    if (control.type === ControlType.CHORD_TYPE) {
+      const {
+        _chordTypeStack,
+        chordType: activeChordType,
+        stickyChordTypes,
+      } = get();
+      if (stickyChordTypes) {
+        const newChordType =
+          activeChordType === control.chordType ? null : control.chordType;
+        set({ _chordTypeStack: [], chordType: newChordType });
+        return;
+      }
+      const newChordTypeStack = _chordTypeStack.includes(control.chordType)
+        ? _chordTypeStack
+        : [..._chordTypeStack, control.chordType];
+      set({ _chordTypeStack: newChordTypeStack, chordType: control.chordType });
+      return;
+    }
+    const { chordExtensions } = get();
+    if (!chordExtensions.includes(control.chordExtension)) {
+      set({ chordExtensions: [...chordExtensions, control.chordExtension] });
+    }
+  },
+
+  controlOff: (control: Control) => {
+    if (control.type === ControlType.CHORD_TYPE) {
+      const { _chordTypeStack, stickyChordTypes } = get();
+      if (stickyChordTypes) {
+        return;
+      }
+      const newChordTypeStack = _chordTypeStack.slice(0, -1);
+      set({
+        _chordTypeStack: newChordTypeStack,
+        chordType: newChordTypeStack[newChordTypeStack.length - 1] ?? null,
+      });
+      return;
+    }
+    const { chordExtensions } = get();
+    set({
+      chordExtensions: chordExtensions.filter(
+        (e) => e !== control.chordExtension,
+      ),
+    });
+  },
+
   _onKeyDown: (event) => {
-    const { _controlOn, playNote } = get();
+    const { controlOn: _controlOn, playNote } = get();
     const control = getControlByKeyboardEvent(event);
     if (control) {
       _controlOn(control);
@@ -263,7 +309,7 @@ export const useMidi = create<MidiState>((set, get) => ({
   },
 
   _onKeyUp: (event) => {
-    const { _controlOff, stopNote } = get();
+    const { controlOff: _controlOff, stopNote } = get();
     const control = getControlByKeyboardEvent(event);
     if (control) {
       _controlOff(control);
@@ -276,7 +322,7 @@ export const useMidi = create<MidiState>((set, get) => ({
   },
 
   _onNoteOn: (event) => {
-    const { padChannel, _controlOn, playNote } = get();
+    const { padChannel, controlOn: _controlOn, playNote } = get();
     const control = getControlByNoteMessageEvent(event, padChannel);
     if (control) {
       _controlOn(control);
@@ -286,7 +332,7 @@ export const useMidi = create<MidiState>((set, get) => ({
   },
 
   _onNoteOff: (event) => {
-    const { padChannel, _controlOff, stopNote } = get();
+    const { padChannel, controlOff: _controlOff, stopNote } = get();
     const control = getControlByNoteMessageEvent(event, padChannel);
     if (control) {
       _controlOff(control);
@@ -313,52 +359,6 @@ export const useMidi = create<MidiState>((set, get) => ({
     if (output && typeof event.value === "number") {
       output.sendPitchBend(event.value);
     }
-  },
-
-  _controlOn: (control: Control) => {
-    if (control.type === ControlType.CHORD_TYPE) {
-      const {
-        _chordTypeStack,
-        chordType: activeChordType,
-        stickyChordTypes,
-      } = get();
-      if (stickyChordTypes) {
-        const newChordType =
-          activeChordType === control.chordType ? null : control.chordType;
-        set({ _chordTypeStack: [], chordType: newChordType });
-        return;
-      }
-      const newChordTypeStack = _chordTypeStack.includes(control.chordType)
-        ? _chordTypeStack
-        : [..._chordTypeStack, control.chordType];
-      set({ _chordTypeStack: newChordTypeStack, chordType: control.chordType });
-      return;
-    }
-    const { chordExtensions } = get();
-    if (!chordExtensions.includes(control.chordExtension)) {
-      set({ chordExtensions: [...chordExtensions, control.chordExtension] });
-    }
-  },
-
-  _controlOff: (control: Control) => {
-    if (control.type === ControlType.CHORD_TYPE) {
-      const { _chordTypeStack, stickyChordTypes } = get();
-      if (stickyChordTypes) {
-        return;
-      }
-      const newChordTypeStack = _chordTypeStack.slice(0, -1);
-      set({
-        _chordTypeStack: newChordTypeStack,
-        chordType: newChordTypeStack[newChordTypeStack.length - 1] ?? null,
-      });
-      return;
-    }
-    const { chordExtensions } = get();
-    set({
-      chordExtensions: chordExtensions.filter(
-        (e) => e !== control.chordExtension,
-      ),
-    });
   },
 }));
 

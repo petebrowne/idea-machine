@@ -1,14 +1,11 @@
-import { CheckboxGroup, HStack, Text } from "@chakra-ui/react";
+import {
+  Button,
+  ButtonGroup,
+  type ButtonProps,
+  HStack,
+  Text,
+} from "@chakra-ui/react";
 import { useShallow } from "zustand/react/shallow";
-import {
-  CheckboxCard,
-  type CheckboxCardProps,
-} from "./components/ui/checkbox-card";
-import {
-  RadioCardItem,
-  type RadioCardItemProps,
-  RadioCardRoot,
-} from "./components/ui/radio-card";
 import { Slider } from "./components/ui/slider";
 import { Switch } from "./components/ui/switch";
 import { CONTROLS } from "./constants";
@@ -16,147 +13,120 @@ import { ControlType } from "./types";
 import { useMidi } from "./use-midi";
 
 export function ChordExtensionControls() {
-  const [chordExtensions] = useMidi(useShallow((s) => [s.chordExtensions]));
+  const [chordExtensions, controlOn, controlOff] = useMidi(
+    useShallow((s) => [s.chordExtensions, s.controlOn, s.controlOff]),
+  );
   return (
-    <CheckboxGroup value={chordExtensions.map((e) => e.toString())}>
-      <HStack gap={3}>
-        {CONTROLS.filter((c) => c.type === ControlType.CHORD_EXTENSION).map(
-          (c) => (
-            <CheckboxControl
-              key={c.chordExtension}
-              label={c.label}
-              shortcut={c.shortcut}
-              value={c.chordExtension.toString()}
-              colorPalette={c.color}
-            />
-          ),
-        )}
+    <ButtonGroup width="full">
+      {CONTROLS.filter((c) => c.type === ControlType.CHORD_EXTENSION).map(
+        (c) => (
+          <ControlButton
+            key={c.chordExtension}
+            label={c.label}
+            shortcut={c.shortcut}
+            colorPalette={c.color}
+            active={chordExtensions.includes(c.chordExtension)}
+            flex={1}
+            onActiveChange={(active) => {
+              if (active) {
+                controlOn(c);
+              } else {
+                controlOff(c);
+              }
+            }}
+          />
+        ),
+      )}
+    </ButtonGroup>
+  );
+}
+
+interface ControlButtonProps extends ButtonProps {
+  label: string;
+  shortcut: string;
+  active?: boolean;
+  onActiveChange: (active: boolean) => void;
+}
+
+function ControlButton({
+  label,
+  shortcut,
+  active,
+  onActiveChange,
+  ...props
+}: ControlButtonProps) {
+  return (
+    <Button
+      variant="subtle"
+      aspectRatio={1}
+      height="auto"
+      paddingBlock={2}
+      // width="auto"
+      borderRadius="md"
+      boxShadow="inset 0 0 0 rgba(0, 0, 0, 0), 0 4px 0 var(--chakra-colors-color-palette-800), var(--chakra-shadows-md)"
+      transform="translateY(-4px)"
+      transitionProperty="transform, box-shadow, background-color, color"
+      transitionDuration="fast"
+      alignItems="flex-end"
+      backgroundColor="bg.muted"
+      color="fg"
+      data-active={active ? "true" : undefined}
+      focusRing="inside"
+      _active={{
+        backgroundColor: "colorPalette.muted",
+        color: "colorPalette.fg",
+        boxShadow:
+          "inset 0 3px 3px rgba(0, 0, 0, 0.5), 0 0 0 var(--chakra-colors-color-palette-800), 0 0 0 rgba(0, 0, 0, 0)",
+        transform: "translateY(0)",
+      }}
+      onMouseDown={() => onActiveChange(true)}
+      onMouseUp={() => onActiveChange(false)}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          onActiveChange(true);
+        }
+      }}
+      onKeyUp={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          onActiveChange(false);
+        }
+      }}
+      {...props}
+    >
+      <HStack justifyContent="space-between" width="full">
+        <Text>{label}</Text>
+        <Text color="fg.muted">({shortcut})</Text>
       </HStack>
-    </CheckboxGroup>
+    </Button>
   );
 }
 
 export function ChordTypeControls() {
-  const [chordType] = useMidi(useShallow((s) => [s.chordType]));
+  const [chordType, controlOn, controlOff] = useMidi(
+    useShallow((s) => [s.chordType, s.controlOn, s.controlOff]),
+  );
   return (
-    <RadioCardRoot
-      value={chordType}
-      // onValueChange={({ value }) => {
-      //   if (includes(Object.values(ChordType), value)) {
-      //     setChordType(value);
-      //   }
-      // }}
-      variant="subtle"
-    >
-      <HStack gap={3}>
-        {CONTROLS.filter((c) => c.type === ControlType.CHORD_TYPE).map((c) => (
-          <RadioControl
-            key={c.chordType}
-            label={c.label}
-            shortcut={c.shortcut}
-            value={c.chordType}
-            colorPalette={c.color}
-          />
-        ))}
-      </HStack>
-    </RadioCardRoot>
+    <ButtonGroup width="full">
+      {CONTROLS.filter((c) => c.type === ControlType.CHORD_TYPE).map((c) => (
+        <ControlButton
+          key={c.chordType}
+          label={c.label}
+          shortcut={c.shortcut}
+          colorPalette={c.color}
+          active={chordType === c.chordType}
+          flex={1}
+          onActiveChange={(active) => {
+            if (active) {
+              controlOn(c);
+            } else {
+              controlOff(c);
+            }
+          }}
+        />
+      ))}
+    </ButtonGroup>
   );
 }
-
-interface RadioControlProps extends RadioCardItemProps {
-  shortcut: string;
-}
-
-function RadioControl({ label, shortcut, ...props }: RadioControlProps) {
-  return (
-    <RadioCardItem
-      indicator={false}
-      label={
-        <HStack justifyContent="space-between" width="full" flexWrap="wrap">
-          <Text color="fg">{label}</Text>
-          <Text color="fg.muted">({shortcut})</Text>
-        </HStack>
-      }
-      css={{
-        ...rootStyle,
-        "& [data-part=item-text]": {
-          width: "full",
-        },
-        "& [data-part=item-control]": {
-          ...controlStyle,
-        },
-      }}
-      _checked={{
-        ...rootStyleChecked,
-        "& [data-part=item-control]": {
-          ...controlStyleChecked,
-        },
-      }}
-      {...props}
-    />
-  );
-}
-
-interface CheckboxControlProps extends CheckboxCardProps {
-  shortcut: string;
-}
-
-function CheckboxControl({ label, shortcut, ...props }: CheckboxControlProps) {
-  return (
-    <CheckboxCard
-      variant="subtle"
-      indicator={false}
-      label={
-        <HStack justifyContent="space-between" width="full" flexWrap="wrap">
-          <Text color="fg">{label}</Text>
-          <Text color="fg.muted">({shortcut})</Text>
-        </HStack>
-      }
-      css={{
-        ...rootStyle,
-        "& [data-part=label]": {
-          width: "full",
-        },
-        "& [data-part=control]": {
-          ...controlStyle,
-        },
-      }}
-      _checked={{
-        ...rootStyleChecked,
-        "& [data-part=control]": {
-          ...controlStyleChecked,
-        },
-      }}
-      {...props}
-    />
-  );
-}
-
-const rootStyle = {
-  aspectRatio: 1,
-  borderRadius: "md",
-  boxShadow:
-    "0 4px 0 var(--chakra-colors-color-palette-800), var(--chakra-shadows-md)",
-  transform: "translateY(-4px)",
-  transitionProperty: "transform, box-shadow",
-  transitionDuration: "fastest",
-};
-
-const rootStyleChecked = {
-  boxShadow:
-    "0 0 0 var(--chakra-colors-color-palette-800), 0 0 0 rgba(0, 0, 0, 0)",
-  transform: "translateY(0)",
-};
-
-const controlStyle = {
-  transitionProperty: "box-shadow",
-  transitionDuration: "fastest",
-  boxShadow: "inset 0 0 0 rgba(0, 0, 0, 0)",
-};
-
-const controlStyleChecked = {
-  boxShadow: "inset 0 3px 3px rgba(0, 0, 0, 0.5)",
-};
 
 export function ChordVoicingControl() {
   const [chordVoicing, setChordVoicing] = useMidi(
