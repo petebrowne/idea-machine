@@ -6,10 +6,58 @@ import {
   SelectTrigger,
   SelectValueText,
 } from "@/components/ui/select";
-import { createListCollection } from "@chakra-ui/react";
-import { useMemo } from "react";
+import {
+  Heading,
+  IconButton,
+  VStack,
+  createListCollection,
+} from "@chakra-ui/react";
+import { useMemo, useRef } from "react";
+import { LuSettings } from "react-icons/lu";
 import { useShallow } from "zustand/react/shallow";
+import {
+  DrawerBody,
+  DrawerCloseTrigger,
+  DrawerContent,
+  DrawerHeader,
+  DrawerRoot,
+  DrawerTrigger,
+} from "./components/ui/drawer";
 import { useMidi } from "./use-midi";
+
+export function SettingsDrawer() {
+  const [controllerInput, dawInput, output] = useMidi(
+    useShallow((s) => [s.controllerInput, s.dawInput, s.output]),
+  );
+  const drawerRef = useRef<HTMLDivElement>(null);
+  return (
+    <DrawerRoot
+      size="md"
+      defaultOpen={
+        controllerInput == null && dawInput == null && output == null
+      }
+    >
+      <DrawerTrigger asChild>
+        <IconButton aria-label="Open Settings" color="teal.800">
+          <LuSettings />
+        </IconButton>
+      </DrawerTrigger>
+      <DrawerContent ref={drawerRef} backgroundColor="bg.muted">
+        <DrawerCloseTrigger />
+        <DrawerHeader>
+          <Heading size="sm">Settings</Heading>
+        </DrawerHeader>
+        <DrawerBody>
+          <VStack gap={4} alignItems="stretch">
+            <ControllerInputSelect portalRef={drawerRef} />
+            <DAWInputSelect portalRef={drawerRef} />
+            <OutputSelect portalRef={drawerRef} />
+          </VStack>
+        </DrawerBody>
+      </DrawerContent>
+    </DrawerRoot>
+  );
+}
 
 interface SelectProps {
   portalRef?: React.RefObject<HTMLDivElement | null>;

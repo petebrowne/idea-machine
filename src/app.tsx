@@ -3,21 +3,12 @@ import {
   Center,
   HStack,
   Heading,
-  IconButton,
+  Link,
   Spinner,
   Text,
   VStack,
 } from "@chakra-ui/react";
-import { useRef } from "react";
-import { LuLightbulb, LuSettings } from "react-icons/lu";
-import {
-  DrawerBody,
-  DrawerCloseTrigger,
-  DrawerContent,
-  DrawerHeader,
-  DrawerRoot,
-  DrawerTrigger,
-} from "./components/ui/drawer";
+import { LuLightbulb } from "react-icons/lu";
 import {
   ChordExtensionControls,
   ChordTypeControls,
@@ -25,16 +16,11 @@ import {
   StickyChordTypeControl,
 } from "./controls";
 import { Keyboard } from "./keyboard";
-import {
-  ControllerInputSelect,
-  DAWInputSelect,
-  OutputSelect,
-} from "./settings";
+import { SettingsDrawer } from "./settings";
 import { useMidiInitialize } from "./use-midi";
 
 export function App() {
   const enabled = useMidiInitialize();
-  const drawerRef = useRef<HTMLDivElement>(null);
   if (!enabled) {
     return (
       <Center
@@ -60,7 +46,7 @@ export function App() {
       marginInline="auto"
       paddingInline={6}
       paddingBlock={12}
-      gap={6}
+      gap={9}
       alignItems="stretch"
     >
       <VStack
@@ -88,26 +74,7 @@ export function App() {
               <span>Idea Machine</span>
             </HStack>
           </Heading>
-          <DrawerRoot size="md">
-            <DrawerTrigger asChild>
-              <IconButton aria-label="Open Settings" color="teal.800">
-                <LuSettings />
-              </IconButton>
-            </DrawerTrigger>
-            <DrawerContent ref={drawerRef} backgroundColor="bg.muted">
-              <DrawerCloseTrigger />
-              <DrawerHeader>
-                <Heading size="sm">Settings</Heading>
-              </DrawerHeader>
-              <DrawerBody>
-                <VStack gap={4} alignItems="stretch">
-                  <ControllerInputSelect portalRef={drawerRef} />
-                  <DAWInputSelect portalRef={drawerRef} />
-                  <OutputSelect portalRef={drawerRef} />
-                </VStack>
-              </DrawerBody>
-            </DrawerContent>
-          </DrawerRoot>
+          <SettingsDrawer />
         </HStack>
         <VStack gap={3} alignItems="stretch" colorPalette="gray">
           <ChordExtensionControls />
@@ -130,6 +97,21 @@ export function App() {
           </Box>
         </HStack>
       </VStack>
+      <HStack justifyContent="center" gap={2} color="fg.muted">
+        <span>
+          Inspired by{" "}
+          <Link colorPalette="purple" href="https://telepathicinstruments.com/">
+            Orchid
+          </Link>
+        </span>
+        <span>•</span>
+        <span>
+          built by{" "}
+          <Link colorPalette="purple" href="https://petebrowne.com/">
+            Pete Browne
+          </Link>
+        </span>
+      </HStack>
     </VStack>
   );
 }

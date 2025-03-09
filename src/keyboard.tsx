@@ -1,5 +1,6 @@
 import { Button, type ButtonProps, Grid, HStack } from "@chakra-ui/react";
 import { useShallow } from "zustand/shallow";
+import { KEYBOARD_NOTE_MAP_REVERSE } from "./constants";
 import { useMidi } from "./use-midi";
 
 export function Keyboard() {
@@ -87,6 +88,7 @@ function Key({ note, ...props }: KeyProps) {
   const highlighted = activeChords.some((chord) =>
     chord.notes.some((n) => n.identifier === note),
   );
+  const key = KEYBOARD_NOTE_MAP_REVERSE[note];
   return (
     <Button
       height="100%"
@@ -125,6 +127,7 @@ function Key({ note, ...props }: KeyProps) {
         },
       }}
       onMouseDown={() => playNote(note)}
+      onMouseLeave={() => stopNote(note)}
       onMouseUp={() => stopNote(note)}
       onKeyDown={(event) => {
         if (event.key === "Enter" || event.key === " ") {
@@ -138,7 +141,7 @@ function Key({ note, ...props }: KeyProps) {
       }}
       {...props}
     >
-      {note}
+      {key && <>({key})</>}
     </Button>
   );
 }

@@ -94,7 +94,18 @@ export const useMidi = create<MidiState>((set, get) => ({
   },
 
   setStickyChordTypes: (stickyChordTypes: boolean) => {
-    set({ stickyChordTypes });
+    const { _chordTypeStack, chordType } = get();
+    if (stickyChordTypes) {
+      set({
+        stickyChordTypes,
+        chordType: chordType ?? ChordType.MAJ,
+      });
+      return;
+    }
+    set({
+      stickyChordTypes,
+      chordType: _chordTypeStack[0] ?? null,
+    });
   },
 
   setChordType: (chordType: ChordType) => {
@@ -258,8 +269,13 @@ export const useMidi = create<MidiState>((set, get) => ({
       } = get();
       if (stickyChordTypes) {
         const newChordType =
-          activeChordType === control.chordType ? null : control.chordType;
-        set({ _chordTypeStack: [], chordType: newChordType });
+          activeChordType === control.chordType && _chordTypeStack.length === 0
+            ? null
+            : control.chordType;
+        set({
+          _chordTypeStack: newChordType ? [newChordType] : [],
+          chordType: newChordType,
+        });
         return;
       }
       const newChordTypeStack = _chordTypeStack.includes(control.chordType)
@@ -278,6 +294,7 @@ export const useMidi = create<MidiState>((set, get) => ({
     if (control.type === ControlType.CHORD_TYPE) {
       const { _chordTypeStack, stickyChordTypes } = get();
       if (stickyChordTypes) {
+        set({ _chordTypeStack: [] });
         return;
       }
       const newChordTypeStack = _chordTypeStack.slice(0, -1);

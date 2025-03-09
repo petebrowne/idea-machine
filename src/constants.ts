@@ -81,3 +81,6 @@ export const KEYBOARD_NOTE_MAP: Record<string, string> = {
   u: "A#3",
   j: "B3",
 };
+export const KEYBOARD_NOTE_MAP_REVERSE = Object.fromEntries(
+  Object.entries(KEYBOARD_NOTE_MAP).map(([key, value]) => [value, key]),
+);

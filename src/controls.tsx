@@ -81,6 +81,7 @@ function ControlButton({
       }}
       onMouseDown={() => onActiveChange(true)}
       onMouseUp={() => onActiveChange(false)}
+      onMouseLeave={() => onActiveChange(false)}
       onKeyDown={(event) => {
         if (event.key === "Enter" || event.key === " ") {
           onActiveChange(true);
@@ -174,7 +175,6 @@ export function StickyChordTypeControl() {
     <Switch
       checked={stickyChordTypes}
       onCheckedChange={() => setStickyChordTypes(!stickyChordTypes)}
-      // variant="raised"
     >
       <Text css={labelStyle}>Sticky Chords</Text>
     </Switch>
