@@ -1,14 +1,16 @@
 import {
   Box,
+  ButtonGroup,
   Center,
   HStack,
   Heading,
+  IconButton,
   Link,
   Spinner,
   Text,
   VStack,
 } from "@chakra-ui/react";
-import { LuLightbulb } from "react-icons/lu";
+import { LuGithub, LuLightbulb } from "react-icons/lu";
 import {
   ChordExtensionControls,
   ChordTypeControls,
@@ -74,7 +76,14 @@ export function App() {
               <span>Idea Machine</span>
             </HStack>
           </Heading>
-          <SettingsDrawer />
+          <ButtonGroup gap={1}>
+            <IconButton aria-label="Source Code" color="teal.800" asChild>
+              <a href="https://github.com/petebrowne/idea-machine">
+                <LuGithub />
+              </a>
+            </IconButton>
+            <SettingsDrawer />
+          </ButtonGroup>
         </HStack>
         <VStack gap={3} alignItems="stretch" colorPalette="gray">
           <ChordExtensionControls />
